@@ -1,0 +1,50 @@
+{
+  "name": "uk_frs",
+  "archetype": "household_income",
+  "population": "UK resident households",
+  "description": "UK Family Resources Survey-style PolicyEngine dataset",
+  "observations": [
+    {
+      "entity": "person",
+      "table_name": "person",
+      "key_column": "person_id",
+      "period_column": "year",
+      "aliases": {
+        "person_benunit_id": "benefit_unit_id",
+        "person_household_id": "household_id"
+      },
+      "excluded_columns": [
+        "person_id",
+        "household_id",
+        "benefit_unit_id",
+        "year"
+      ]
+    },
+    {
+      "entity": "benefit_unit",
+      "table_name": "benunit",
+      "key_column": "benefit_unit_id",
+      "period_column": "year",
+      "aliases": {
+        "benunit_id": "benefit_unit_id"
+      },
+      "excluded_columns": [
+        "benefit_unit_id",
+        "household_id",
+        "year"
+      ]
+    },
+    {
+      "entity": "household",
+      "table_name": "household",
+      "key_column": "household_id",
+      "weight_column": "household_weight",
+      "period_column": "year",
+      "excluded_columns": [
+        "household_id",
+        "household_weight",
+        "year"
+      ]
+    }
+  ]
+}

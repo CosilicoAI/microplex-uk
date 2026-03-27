@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "microplex-uk"
+version = "0.1.0"
+description = "UK-specific adapters and benchmark harnesses for microplex"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Cosilico", email = "hello@cosilico.ai" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "microplex",
+    "h5py>=3.0",
+    "openpyxl>=3.0",
+    "odfpy>=1.4",
+    "pandas>=2.0",
+    "pyyaml>=6.0",
+    "requests>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1",
+]
+
+[project.urls]
+Repository = "https://github.com/CosilicoAI/microplex-uk"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/microplex_uk"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = [
+    "E501",
+    "N803",
+    "N806",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["E402", "N802"]
+
+[tool.uv.sources]
+microplex = { path = "../microplex", editable = true }

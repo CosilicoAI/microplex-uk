@@ -1,0 +1,44 @@
+{
+  "name": "uk_was",
+  "archetype": "wealth",
+  "population": "UK households",
+  "description": "UK Wealth and Assets Survey household extract",
+  "observations": [
+    {
+      "entity": "household",
+      "key_column": "household_id",
+      "weight_column": "household_weight",
+      "period_column": "year",
+      "columns": [
+        { "raw_column": "CASER7", "canonical_name": "household_id" },
+        { "raw_column": "yearr7", "canonical_name": "year" },
+        { "raw_column": "R7xshhwgt", "canonical_name": "household_weight" },
+        { "raw_column": "gorr7", "canonical_name": "region_code", "value_type": "categorical" },
+        { "raw_column": "hholdtyper7", "canonical_name": "household_type_code", "value_type": "categorical" },
+        { "raw_column": "hrpsexr7", "canonical_name": "head_sex_code", "value_type": "categorical" },
+        { "raw_column": "HRPDVAge8r7", "canonical_name": "head_age_band_code", "value_type": "categorical" },
+        { "raw_column": "numadultr7", "canonical_name": "num_adults" },
+        { "raw_column": "numch18r7", "canonical_name": "num_children" },
+        { "raw_column": "dvprirntr7", "canonical_name": "is_renter_code" },
+        { "raw_column": "TotWlthR7", "canonical_name": "net_wealth" },
+        { "raw_column": "TotmortR7", "canonical_name": "mortgage_liabilities" },
+        { "raw_column": "DVTotinc_bhcR7", "canonical_name": "household_income_bhc" },
+        { "raw_column": "DVTotinc_ahcR7", "canonical_name": "household_income_ahc" },
+        { "raw_column": "DVPropertyR7", "canonical_name": "property_wealth" },
+        { "raw_column": "HFINWR7_SUM", "canonical_name": "gross_financial_wealth" },
+        { "raw_column": "HFINWNTR7_Sum", "canonical_name": "net_financial_wealth" },
+        { "raw_column": "DVHValueR7", "canonical_name": "main_residence_value" },
+        { "raw_column": "DVHseValR7_sum", "canonical_name": "other_residential_property_value" },
+        { "raw_column": "DVBLDValR7_sum", "canonical_name": "non_residential_property_value" },
+        { "raw_column": "DVSaValR7_aggr", "canonical_name": "savings" },
+        { "raw_column": "vcarnr7", "canonical_name": "num_vehicles" },
+        { "raw_column": "TOTPENR7_aggr", "canonical_name": "pensions" },
+        { "raw_column": "DVValDBTR7_aggr", "canonical_name": "db_pensions" },
+        { "raw_column": "DVFESHARESR7_aggr", "canonical_name": "emp_shares_options" },
+        { "raw_column": "DVFShUKVR7_aggr", "canonical_name": "uk_shares" },
+        { "raw_column": "DVIISAVR7_aggR", "canonical_name": "investment_isas" },
+        { "raw_column": "DVFCollVR7_aggr", "canonical_name": "unit_investment_trusts" }
+      ]
+    }
+  ]
+}

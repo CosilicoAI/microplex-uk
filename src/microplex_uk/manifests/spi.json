@@ -1,0 +1,34 @@
+{
+  "name": "uk_spi",
+  "archetype": "tax_microdata",
+  "population": "UK tax units",
+  "description": "UK Survey of Personal Incomes tax-unit extract",
+  "observations": [
+    {
+      "entity": "tax_unit",
+      "key_column": "tax_unit_id",
+      "weight_column": "weight",
+      "period_column": "year",
+      "columns": [
+        { "raw_column": "FACT", "canonical_name": "weight" },
+        { "raw_column": "PAY", "canonical_name": "employment_income" },
+        { "raw_column": "INCBBS", "canonical_name": "savings_interest_income" },
+        { "raw_column": "INCPROP", "canonical_name": "property_income" },
+        { "raw_column": "PROFITS", "canonical_name": "self_employment_income" },
+        { "raw_column": "DIVIDENDS", "canonical_name": "dividend_income" },
+        { "raw_column": "PENSION", "canonical_name": "private_pension_income" },
+        { "raw_column": "OTHERINV", "canonical_name": "other_investment_income" },
+        { "raw_column": "TAXINC", "canonical_name": "taxable_income" },
+        { "raw_column": "TOTTAX_DEVO_TXP", "canonical_name": "income_tax" },
+        { "raw_column": "TAX_CRED", "canonical_name": "tax_credit" },
+        { "raw_column": "GORCODE", "canonical_name": "region_code", "value_type": "categorical" },
+        { "raw_column": "SEX", "canonical_name": "sex", "value_type": "categorical" },
+        { "raw_column": "MAR", "canonical_name": "marital_status_code", "value_type": "categorical" },
+        { "raw_column": "AGERANGE", "canonical_name": "age_range_code", "value_type": "categorical" },
+        { "raw_column": "TAXPAYER", "canonical_name": "is_taxpayer" },
+        { "raw_column": "SEINC_NUM", "canonical_name": "self_employment_source_count" },
+        { "raw_column": "MAINSRCE", "canonical_name": "main_income_source_code", "value_type": "categorical" }
+      ]
+    }
+  ]
+}
