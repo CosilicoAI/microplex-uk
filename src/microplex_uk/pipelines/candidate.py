@@ -15,9 +15,11 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from microplex.core import EntityType
+from microplex.geography import GeographyAssignmentPlan, GeographyProvider
 
 from microplex_uk.data_sources import UKSPISourceProvider, UKWASSourceProvider
 from microplex_uk.data_sources.frs import _extract_period, _read_h5_table
+from microplex_uk.geography import apply_uk_candidate_geography
 from microplex_uk.policyengine import (
     PolicyEngineUKBenchmarkComparison,
     PolicyEngineUKBenchmarkResult,
@@ -301,6 +303,9 @@ def build_fused_uk_candidate_from_tables(
     spi_tax_units: pd.DataFrame | None = None,
     was_households: pd.DataFrame | None = None,
     donor_block_specs: tuple[UKDonorBlockSpec, ...] | None = None,
+    geography_provider: GeographyProvider | None = None,
+    geography_assignment_plan: GeographyAssignmentPlan | None = None,
+    geography_random_state: int | None = None,
     seed: int = 0,
 ) -> UKCandidateDataset:
     block_specs = donor_block_specs or default_uk_candidate_donor_block_specs()
@@ -347,6 +352,16 @@ def build_fused_uk_candidate_from_tables(
         )
         household_features = _build_household_features(candidate_person, candidate_household)
 
+    if geography_provider is not None:
+        candidate_person, candidate_benunit, candidate_household = apply_uk_candidate_geography(
+            person=candidate_person,
+            benunit=candidate_benunit,
+            household=candidate_household,
+            geography_provider=geography_provider,
+            assignment_plan=geography_assignment_plan,
+            random_state=seed if geography_random_state is None else geography_random_state,
+        )
+
     return UKCandidateDataset(
         person=candidate_person,
         benunit=candidate_benunit,
@@ -356,6 +371,7 @@ def build_fused_uk_candidate_from_tables(
             "donor_blocks": [block.name for block in block_specs],
             "used_spi": spi_tax_units is not None,
             "used_was": was_households is not None,
+            "used_geography_provider": geography_provider is not None,
         },
     )
 
@@ -366,6 +382,9 @@ def build_fused_uk_candidate_dataset(
     spi_source_path: str | Path | None = None,
     was_source_path: str | Path | None = None,
     donor_block_specs: tuple[UKDonorBlockSpec, ...] | None = None,
+    geography_provider: GeographyProvider | None = None,
+    geography_assignment_plan: GeographyAssignmentPlan | None = None,
+    geography_random_state: int | None = None,
     policy_period: int | None = None,
     seed: int = 0,
 ) -> UKCandidateDataset:
@@ -397,6 +416,9 @@ def build_fused_uk_candidate_dataset(
         spi_tax_units=spi_tax_units,
         was_households=was_households,
         donor_block_specs=donor_block_specs,
+        geography_provider=geography_provider,
+        geography_assignment_plan=geography_assignment_plan,
+        geography_random_state=geography_random_state,
         seed=seed,
     )
 
@@ -413,6 +435,9 @@ def build_and_benchmark_fused_uk_candidate(
     spi_source_path: str | Path | None = None,
     was_source_path: str | Path | None = None,
     donor_block_specs: tuple[UKDonorBlockSpec, ...] | None = None,
+    geography_provider: GeographyProvider | None = None,
+    geography_assignment_plan: GeographyAssignmentPlan | None = None,
+    geography_random_state: int | None = None,
     policy_period: int | None = None,
     target_provider: PolicyEngineUKTargetProvider | None = None,
     baseline_benchmark_result: PolicyEngineUKBenchmarkResult | None = None,
@@ -427,6 +452,9 @@ def build_and_benchmark_fused_uk_candidate(
         spi_source_path=spi_source_path,
         was_source_path=was_source_path,
         donor_block_specs=donor_block_specs,
+        geography_provider=geography_provider,
+        geography_assignment_plan=geography_assignment_plan,
+        geography_random_state=geography_random_state,
         policy_period=policy_period,
         seed=seed,
     )

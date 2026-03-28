@@ -5,6 +5,14 @@ from microplex_uk.data_sources import (
     UKSPISourceProvider,
     UKWASSourceProvider,
 )
+from microplex_uk.geography import (
+    UK_ATOMIC_GEOGRAPHY_ID_COLUMN,
+    UK_GEOGRAPHY_PROBABILITY_COLUMN,
+    UK_PARENT_GEOGRAPHY_COLUMNS,
+    apply_uk_candidate_geography,
+    build_static_uk_geography_provider,
+    default_uk_atomic_geography_assignment_plan,
+)
 from microplex_uk.pipelines import (
     UKCandidateBenchmarkArtifacts,
     UKCandidateDataset,
@@ -36,6 +44,12 @@ __all__ = [
     "UKFRSSourceProvider",
     "UKSPISourceProvider",
     "UKWASSourceProvider",
+    "UK_ATOMIC_GEOGRAPHY_ID_COLUMN",
+    "UK_PARENT_GEOGRAPHY_COLUMNS",
+    "UK_GEOGRAPHY_PROBABILITY_COLUMN",
+    "default_uk_atomic_geography_assignment_plan",
+    "build_static_uk_geography_provider",
+    "apply_uk_candidate_geography",
     "UKDonorCombineStrategy",
     "UKDonorVariableSpec",
     "UKDonorBlockSpec",

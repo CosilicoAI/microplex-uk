@@ -7,6 +7,7 @@ import h5py
 import pandas as pd
 
 from microplex_uk.data_sources.frs import _read_h5_table
+from microplex_uk.geography import build_static_uk_geography_provider
 from microplex_uk.pipelines import (
     UKCandidateDataset,
     build_and_benchmark_fused_uk_candidate,
@@ -177,6 +178,67 @@ def test_default_uk_candidate_donor_block_specs_keep_spi_to_capital_income():
         "savings_interest_income",
         "property_income",
     }
+
+
+def test_build_fused_uk_candidate_from_tables_assigns_atomic_uk_geography():
+    person = pd.DataFrame(
+        {
+            "person_id": [1, 2],
+            "person_benunit_id": [10, 20],
+            "person_household_id": [100, 200],
+            "age": [30, 40],
+            "gender": ["MALE", "FEMALE"],
+            "dividend_income": [0.0, 0.0],
+            "savings_interest_income": [0.0, 0.0],
+            "property_income": [0.0, 0.0],
+            "private_pension_income": [0.0, 0.0],
+            "self_employment_income": [0.0, 0.0],
+            "employment_income": [30_000.0, 25_000.0],
+            "miscellaneous_income": [0.0, 0.0],
+        }
+    )
+    benunit = pd.DataFrame({"benunit_id": [10, 20], "is_married": [0, 0]})
+    household = pd.DataFrame(
+        {
+            "household_id": [100, 200],
+            "household_weight": [1.0, 1.0],
+            "region": ["LONDON", "SCOTLAND"],
+            "tenure_type": ["OWNED_OUTRIGHT", "RENT_FROM_COUNCIL"],
+            "council_tax": [1500.0, 900.0],
+        }
+    )
+    geography_provider = build_static_uk_geography_provider(
+        pd.DataFrame(
+            {
+                "oa_code": ["OA100", "OA200"],
+                "region": ["LONDON", "SCOTLAND"],
+                "country": ["ENGLAND", "SCOTLAND"],
+                "lsoa": ["LSOA100", "LSOA200"],
+                "local_authority": ["E09000001", "S12000033"],
+                "constituency": ["E14000530", "S14000024"],
+                "assignment_probability": [1.0, 1.0],
+            }
+        )
+    )
+
+    candidate = build_fused_uk_candidate_from_tables(
+        person=person,
+        benunit=benunit,
+        household=household,
+        time_period=2024,
+        geography_provider=geography_provider,
+        seed=7,
+    )
+
+    assert candidate.household["oa_code"].tolist() == ["OA100", "OA200"]
+    assert candidate.household["local_authority"].tolist() == [
+        "E09000001",
+        "S12000033",
+    ]
+    assert candidate.person["oa_code"].tolist() == ["OA100", "OA200"]
+    assert candidate.person["country"].tolist() == ["ENGLAND", "SCOTLAND"]
+    assert candidate.benunit["constituency"].tolist() == ["E14000530", "S14000024"]
+    assert candidate.metadata["used_geography_provider"] is True
 
 
 def test_uk_candidate_dataset_save_writes_policyengine_readable_h5(tmp_path: Path):
