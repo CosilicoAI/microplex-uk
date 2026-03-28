@@ -14,6 +14,7 @@ from microplex_uk.geography import (
     default_uk_atomic_geography_assignment_plan,
 )
 from microplex_uk.pipelines import (
+    UKBenchmarkMode,
     UKCandidateBenchmarkArtifacts,
     UKCandidateDataset,
     UKDonorBlockSpec,
@@ -53,6 +54,7 @@ __all__ = [
     "UKDonorCombineStrategy",
     "UKDonorVariableSpec",
     "UKDonorBlockSpec",
+    "UKBenchmarkMode",
     "UKCandidateDataset",
     "UKCandidateBenchmarkArtifacts",
     "build_fused_uk_candidate_from_tables",

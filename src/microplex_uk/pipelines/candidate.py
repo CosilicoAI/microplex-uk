@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 from microplex.core import EntityType
 from microplex.geography import GeographyAssignmentPlan, GeographyProvider
+from microplex.targets import TargetQuery
 
 from microplex_uk.data_sources import UKSPISourceProvider, UKWASSourceProvider
 from microplex_uk.data_sources.frs import _extract_period, _read_h5_table
@@ -23,7 +24,10 @@ from microplex_uk.geography import apply_uk_candidate_geography
 from microplex_uk.policyengine import (
     PolicyEngineUKBenchmarkComparison,
     PolicyEngineUKBenchmarkResult,
+    PolicyEngineUKDirectBenchmarkComparison,
+    PolicyEngineUKDirectBenchmarkResult,
     compare_policyengine_uk_benchmark,
+    compare_policyengine_uk_direct_benchmark,
 )
 from microplex_uk.targets import PolicyEngineUKTargetProvider
 
@@ -116,6 +120,11 @@ class UKDonorBlockSpec:
     output_defaults: tuple[UKDonorOutputDefaultSpec, ...] = ()
 
 
+class UKBenchmarkMode(str, Enum):
+    STANDARD = "standard"
+    DIRECT = "direct"
+
+
 @dataclass
 class UKCandidateDataset:
     person: pd.DataFrame
@@ -201,7 +210,7 @@ class UKCandidateBenchmarkArtifacts:
     label: str
     candidate_dataset_path: Path
     comparison_path: Path
-    comparison: PolicyEngineUKBenchmarkComparison
+    comparison: PolicyEngineUKBenchmarkComparison | PolicyEngineUKDirectBenchmarkComparison
 
 
 def _write_transfer_frame(
@@ -439,8 +448,12 @@ def build_and_benchmark_fused_uk_candidate(
     geography_assignment_plan: GeographyAssignmentPlan | None = None,
     geography_random_state: int | None = None,
     policy_period: int | None = None,
+    benchmark_mode: UKBenchmarkMode = UKBenchmarkMode.STANDARD,
     target_provider: PolicyEngineUKTargetProvider | None = None,
-    baseline_benchmark_result: PolicyEngineUKBenchmarkResult | None = None,
+    target_query: TargetQuery | None = None,
+    baseline_benchmark_result: (
+        PolicyEngineUKBenchmarkResult | PolicyEngineUKDirectBenchmarkResult | None
+    ) = None,
     seed: int = 0,
 ) -> UKCandidateBenchmarkArtifacts:
     effective_target_provider = target_provider or PolicyEngineUKTargetProvider(
@@ -465,25 +478,41 @@ def build_and_benchmark_fused_uk_candidate(
         artifact_dir / "candidate.h5",
         python_executable=python_executable,
     )
-    comparison = compare_policyengine_uk_benchmark(
-        candidate_dataset_path=candidate_dataset_path,
-        baseline_dataset_path=baseline_dataset_path,
-        time_period=dataset.time_period,
-        python_executable=python_executable,
-        policyengine_uk_repo_dir=policyengine_uk_repo_dir,
-        policyengine_uk_data_repo_dir=policyengine_uk_data_repo_dir,
-        target_provider=effective_target_provider,
-        baseline_result=baseline_benchmark_result,
-        metadata={
-            "candidate_label": label,
-            "sources": {
-                "frs": str(Path(frs_dataset_path)),
-                "spi": str(Path(spi_source_path)) if spi_source_path is not None else None,
-                "was": str(Path(was_source_path)) if was_source_path is not None else None,
-            },
-            "donor_blocks": dataset.metadata.get("donor_blocks", []),
+    benchmark_metadata = {
+        "candidate_label": label,
+        "sources": {
+            "frs": str(Path(frs_dataset_path)),
+            "spi": str(Path(spi_source_path)) if spi_source_path is not None else None,
+            "was": str(Path(was_source_path)) if was_source_path is not None else None,
         },
-    )
+        "donor_blocks": dataset.metadata.get("donor_blocks", []),
+        "benchmark_mode": benchmark_mode.value,
+    }
+    if benchmark_mode is UKBenchmarkMode.DIRECT:
+        comparison = compare_policyengine_uk_direct_benchmark(
+            candidate_dataset_path=candidate_dataset_path,
+            baseline_dataset_path=baseline_dataset_path,
+            time_period=dataset.time_period,
+            python_executable=python_executable,
+            policyengine_uk_repo_dir=policyengine_uk_repo_dir,
+            policyengine_uk_data_repo_dir=policyengine_uk_data_repo_dir,
+            target_provider=effective_target_provider,
+            target_query=target_query,
+            baseline_result=baseline_benchmark_result,
+            metadata=benchmark_metadata,
+        )
+    else:
+        comparison = compare_policyengine_uk_benchmark(
+            candidate_dataset_path=candidate_dataset_path,
+            baseline_dataset_path=baseline_dataset_path,
+            time_period=dataset.time_period,
+            python_executable=python_executable,
+            policyengine_uk_repo_dir=policyengine_uk_repo_dir,
+            policyengine_uk_data_repo_dir=policyengine_uk_data_repo_dir,
+            target_provider=effective_target_provider,
+            baseline_result=baseline_benchmark_result,
+            metadata=benchmark_metadata,
+        )
     comparison_path = comparison.save(artifact_dir / "comparison.json")
     return UKCandidateBenchmarkArtifacts(
         label=label,

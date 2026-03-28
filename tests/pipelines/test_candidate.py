@@ -9,6 +9,7 @@ import pandas as pd
 from microplex_uk.data_sources.frs import _read_h5_table
 from microplex_uk.geography import build_static_uk_geography_provider
 from microplex_uk.pipelines import (
+    UKBenchmarkMode,
     UKCandidateDataset,
     build_and_benchmark_fused_uk_candidate,
     build_fused_uk_candidate_dataset,
@@ -388,6 +389,65 @@ def test_build_and_benchmark_fused_uk_candidate_forwards_baseline_result(
     )
 
     assert artifacts.candidate_dataset_path.exists()
+
+
+def test_build_and_benchmark_fused_uk_candidate_direct_mode_uses_direct_harness(
+    monkeypatch,
+    tmp_path: Path,
+):
+    class _FakeTargetProvider:
+        pass
+
+    dataset = UKCandidateDataset(
+        person=pd.DataFrame({"person_id": [1], "person_household_id": [10]}),
+        benunit=pd.DataFrame({"benunit_id": [10]}),
+        household=pd.DataFrame({"household_id": [10], "household_weight": [1.0]}),
+        time_period=2024,
+    )
+
+    monkeypatch.setattr(
+        "microplex_uk.pipelines.candidate.build_fused_uk_candidate_dataset",
+        lambda **kwargs: dataset,
+    )
+
+    target_query = object()
+    baseline_result = object()
+
+    def fake_compare(**kwargs):
+        assert kwargs["target_query"] is target_query
+        assert kwargs["baseline_result"] is baseline_result
+
+        class _FakeComparison:
+            def __init__(self):
+                self.mean_abs_relative_error_delta = -0.1
+
+            def save(self, path: Path) -> Path:
+                path.write_text(json.dumps({"status": "ok"}))
+                return path
+
+        return _FakeComparison()
+
+    monkeypatch.setattr(
+        "microplex_uk.pipelines.candidate.compare_policyengine_uk_direct_benchmark",
+        fake_compare,
+    )
+
+    artifacts = build_and_benchmark_fused_uk_candidate(
+        label="mini_candidate",
+        artifacts_dir=tmp_path,
+        frs_dataset_path="/tmp/frs.h5",
+        baseline_dataset_path="/tmp/baseline.h5",
+        python_executable="/tmp/python",
+        policyengine_uk_repo_dir="/tmp/policyengine-uk",
+        policyengine_uk_data_repo_dir="/tmp/policyengine-uk-data",
+        target_provider=_FakeTargetProvider(),
+        benchmark_mode=UKBenchmarkMode.DIRECT,
+        target_query=target_query,
+        baseline_benchmark_result=baseline_result,
+    )
+
+    assert artifacts.candidate_dataset_path.exists()
+    assert json.loads(artifacts.comparison_path.read_text())["status"] == "ok"
 
 
 def test_build_fused_uk_candidate_dataset_allows_policy_period_override(
